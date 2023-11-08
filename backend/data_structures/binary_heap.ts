@@ -8,12 +8,12 @@ class BinaryHeap<Type>{
         this.values_list = values.map((val) => val)
 
         for (let i = this.values_list.length - 1; i >= 0; i--) {
-            this.heapify_up(i)
+            this.heapifyUp(i)
         }
     }
 
 
-    public extract_root() {
+    public extractRoot() {
         let heap_size = this.values_list.length;
 
         if (heap_size < 1)
@@ -21,7 +21,7 @@ class BinaryHeap<Type>{
 
         this.replace(0, heap_size - 1)
         let root = this.values_list.pop();
-        this.heapify_down(0);
+        this.heapifyDown(0);
 
         return root;
     }
@@ -30,11 +30,11 @@ class BinaryHeap<Type>{
     public insert(value: Type) {
         this.values_list.push(value);
         let last_idx = this.values_list.length;
-        this.heapify_up(last_idx);
+        this.heapifyUp(last_idx);
     }
 
 
-    public get_root() {
+    public getRoot() {
         let heap_size = this.values_list.length;
 
         if (heap_size > 0)
@@ -43,7 +43,7 @@ class BinaryHeap<Type>{
     }
 
 
-    private heapify_up(index: number) {
+    private heapifyUp(index: number) {
         if (index === 0)
             return
 
@@ -56,7 +56,7 @@ class BinaryHeap<Type>{
 
         if (!this.compare_fn(parent, child)) {
             this.replace(parent_idx, index)
-            this.heapify_up(parent_idx);
+            this.heapifyUp(parent_idx);
         }
 
     }
@@ -74,7 +74,7 @@ class BinaryHeap<Type>{
     }
 
 
-    private heapify_down(index: number) {
+    private heapifyDown(index: number) {
         let left_child_idx = index * 2 + 1;
         let right_child_idx = left_child_idx + 1;
         let last_idx = this.values_list.length - 1;
@@ -92,17 +92,17 @@ class BinaryHeap<Type>{
         if (right_child === undefined) {
             if (!this.compare_fn(parent, left_child)) {
                 this.replace(index, left_child_idx)
-                this.heapify_down(left_child_idx);
+                this.heapifyDown(left_child_idx);
             }
         }
         else {
             if (this.compare_fn(right_child, left_child) && !this.compare_fn(parent, right_child)) {
                 this.replace(index, right_child_idx)
-                this.heapify_down(right_child_idx);
+                this.heapifyDown(right_child_idx);
             }
             else if (this.compare_fn(left_child, right_child) && !this.compare_fn(parent, left_child)) {
                 this.replace(index, left_child_idx)
-                this.heapify_down(left_child_idx);
+                this.heapifyDown(left_child_idx);
             }
         }
     }
