@@ -1,4 +1,6 @@
-class BinaryHeap<Type>{
+import { Heap } from "./heap";
+
+export class BinaryHeap<Type> implements Heap<Type>{
     public values_list: Type[];
     private compare_fn: (parent: Type, child: Type) => boolean;
 
@@ -6,9 +8,10 @@ class BinaryHeap<Type>{
     constructor(values: Type[], key: (parent: Type, child: Type) => boolean) {
         this.compare_fn = key;
         this.values_list = values.map((val) => val)
-
-        for (let i = this.values_list.length - 1; i >= 0; i--) {
-            this.heapifyUp(i)
+        let last_idx = values.length
+        let last_parent = (last_idx + last_idx % 2) / 2 - 1
+        for (let i = last_parent; i >= 0; i--) {
+            this.heapifyDown(i)
         }
     }
 
