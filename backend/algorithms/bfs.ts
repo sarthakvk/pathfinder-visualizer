@@ -68,24 +68,3 @@ class BFS {
         return false
     }
 }
-
-let grid = new Grid(10, 10, [[0,1],[1,1],[5,3], [8,9]]);
-let algo = new BFS(grid);
-
-let path = algo.shortestPath(grid.getCell(0, 0), grid.getCell(9, 9));
-path.reverse()
-let t: GridCell;
-for (let i = 0; i < 10; i++){
-    for (let j = 0; j < 10; j++){
-        if(t === undefined)
-            t = path.shift();
-
-        if (t && t.x === i && t.y === j) {
-            process.stdout.write("[..]")
-            t = undefined;
-        } else {
-            process.stdout.write("[  ]")
-        }
-    }
-    console.log()
-}
