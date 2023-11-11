@@ -2,16 +2,20 @@ export class GridCell {
     x: number;
     y: number;
     reachable: boolean;
+    weight: number;
     adjecent: GridCell[];
+    distance_from_source: number;
 
-    constructor(x: number, y: number, reachable: boolean = true) {
+    constructor(x: number, y: number, reachable: boolean = true, weight: number = 1) {
         if (x < 0 || y < 0) {
             throw new Error("grid cell dimentions should be positive")
         }
         this.x = x;
         this.y = y;
         this.reachable = reachable;
+        this.weight = weight;
         this.adjecent = [];
+        this.distance_from_source = Infinity;
     }
 
     toString(): string {
@@ -56,6 +60,17 @@ export class Grid {
             return this.data[row][col]
 
         throw new Error("Invalid index")
+    }
+
+    public getAllCells(): GridCell[]{
+        let cells: GridCell[] = []
+        for (let row of this.data) for (let cell of row) cells.push(cell);
+
+        return cells;
+    }
+    public setCellWeight(row: number, col: number, weight: number){
+        let cell  = this.getCell(row, col);
+        cell.weight = weight;
     }
 
     public isValidIndex(row: number, col: number): boolean {
