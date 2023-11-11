@@ -1,7 +1,7 @@
 import { BinaryHeap } from "./binary_heap";
 import { Heap } from "./heap"
 
-class PriorityQueue<Type> {
+export class PriorityQueue<Type> {
     private data: Heap<Type>;
     private compare_fn: (high: Type, low: Type) => boolean;
 
@@ -20,6 +20,10 @@ class PriorityQueue<Type> {
 
     public getMaxPriorityElement() {
         return this.data.extractRoot();
+    }
+
+    public resyncElement(element: Type) {
+        this.data.resyncElement(element);
     }
 
     public isEmpty() {

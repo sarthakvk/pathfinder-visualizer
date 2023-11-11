@@ -1,14 +1,19 @@
 import { Heap } from "./heap";
 
 export class BinaryHeap<Type> implements Heap<Type>{
-    public values_list: Type[];
+    private values_list: Type[];
+    private values_index: { [key: string]: number } = {}
     private compare_fn: (parent: Type, child: Type) => boolean;
 
 
     constructor(values: Type[], key: (parent: Type, child: Type) => boolean) {
         this.compare_fn = key;
         this.values_list = values.map((val) => val)
-        let last_idx = values.length
+        let last_idx = values.length - 1;
+
+        for (let i = 0; i <= last_idx; i++)
+            this.values_index[this.values_list[i].toString()] = i
+
         let last_parent = (last_idx + last_idx % 2) / 2 - 1
         for (let i = last_parent; i >= 0; i--) {
             this.heapifyDown(i)
@@ -24,6 +29,7 @@ export class BinaryHeap<Type> implements Heap<Type>{
 
         this.replace(0, heap_size - 1)
         let root = this.values_list.pop();
+        delete this.values_index[root.toString()]
         this.heapifyDown(0);
 
         return root;
@@ -32,7 +38,8 @@ export class BinaryHeap<Type> implements Heap<Type>{
 
     public insert(value: Type) {
         this.values_list.push(value);
-        let last_idx = this.values_list.length;
+        let last_idx = this.values_list.length - 1;
+        this.values_index[value.toString()] = last_idx;
         this.heapifyUp(last_idx);
     }
 
@@ -43,6 +50,16 @@ export class BinaryHeap<Type> implements Heap<Type>{
         if (heap_size > 0)
             return this.values_list[0]
 
+    }
+
+    public resyncElement(element: Type) {
+        let idx: number = this.values_index[element.toString()]
+
+        if (idx === undefined)
+            throw Error("Element doesn't exist")
+
+        this.heapifyUp(idx);
+        this.heapifyDown(idx);
     }
 
 
@@ -71,9 +88,15 @@ export class BinaryHeap<Type> implements Heap<Type>{
         if (index1 > max_idx || index2 > max_idx)
             return
 
-        let tmp: Type = this.values_list[index1];
-        this.values_list[index1] = this.values_list[index2];
-        this.values_list[index2] = tmp;
+        let obj1: Type = this.values_list[index1];
+        let obj2: Type = this.values_list[index2];
+
+        this.values_list[index1] = obj2;
+        this.values_list[index2] = obj1;
+
+        // updating obj index map
+        this.values_index[obj1.toString()] = index2;
+        this.values_index[obj2.toString()] = index1;
     }
 
 
