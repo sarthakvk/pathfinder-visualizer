@@ -1,8 +1,8 @@
 import { Grid, GridCell } from '../data_structures/grid';
 
 class BFS {
-    grid: Grid;
-    parent: { [key: string]: GridCell } = {};
+    private grid: Grid;
+    private shortest_path_parent_refs: { [key: string]: GridCell } = {};
 
     constructor(grid: Grid) {
         this.grid = grid;
@@ -18,9 +18,9 @@ class BFS {
         let path: GridCell[] = [];
         let child = end;
 
-        while (this.parent[child.toString()] !== undefined) {
+        while (this.shortest_path_parent_refs[child.toString()] !== undefined) {
             path.push(child);
-            child = this.parent[child.toString()]
+            child = this.shortest_path_parent_refs[child.toString()]
         }
         path.push(child);
 
@@ -36,7 +36,7 @@ class BFS {
         let cellsToVisit: GridCell[] = [];
 
         for (let child of start.adjecent) {
-            this.parent[child.toString()] = start;
+            this.shortest_path_parent_refs[child.toString()] = start;
             cellsToVisit.push(child);
         }
 
@@ -55,7 +55,7 @@ class BFS {
 
                 for (let child of cell.adjecent) {
                     if (visited[child.toString()] === undefined) {
-                        this.parent[child.toString()] = cell;
+                        this.shortest_path_parent_refs[child.toString()] = cell;
                         nextCellsToVisit.push(child);
                     }
                 }
