@@ -2,7 +2,7 @@ import { Grid, GridCell } from "../data_structures/grid";
 import { PriorityQueue } from "../data_structures/priority_queue";
 
 
-class Dijkstra {
+export class Dijkstra {
     private grid: Grid;
     private source_cell: GridCell;
     public shortest_path_parent_refs: { [key: string]: GridCell } = {};
@@ -22,7 +22,7 @@ class Dijkstra {
 
     public findAllShortestPaths() {
         while (!this.vertex_queue.isEmpty()) {
-            let closest_vertex = this.vertex_queue.getMaxPriorityElement();
+            let closest_vertex = this.vertex_queue.getMaxPriorityElement()!;
 
             this.shortest_distances[closest_vertex.toString()] = closest_vertex.distance_from_source;
             for (let adj of closest_vertex.adjecent) {
@@ -37,7 +37,7 @@ class Dijkstra {
     public findShortestPath(destination: [number, number]): GridCell[] {
         let destination_cell = this.grid.getCell(...destination);
         while (!this.vertex_queue.isEmpty()) {
-            let closest_vertex = this.vertex_queue.getMaxPriorityElement();
+            let closest_vertex = this.vertex_queue.getMaxPriorityElement()!;
             let distance = closest_vertex.distance_from_source;
             this.shortest_distances[closest_vertex.toString()] = distance;
 
@@ -51,6 +51,7 @@ class Dijkstra {
                 }
             }
         }
+        return []
     }
 
     private buildPath(vertex: GridCell): GridCell[] {
@@ -66,7 +67,7 @@ class Dijkstra {
         }
         path.push(this.source_cell);
 
-        return path;
+        return path.reverse();
     }
 
     private relax(vertex: GridCell, new_parent: GridCell) {

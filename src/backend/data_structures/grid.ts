@@ -32,6 +32,7 @@ export class Grid {
     constructor(M: number, N: number, blocked: [number, number][] = []) {
         this.row_size = M;
         this.col_size = N;
+        blocked = blocked.map((val) => val) 
         blocked.sort((n1, n2) => {
             if (n1[0] !== n2[0])
                 return n1[0] - n2[0];

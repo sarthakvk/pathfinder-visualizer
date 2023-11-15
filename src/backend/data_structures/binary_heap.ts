@@ -1,6 +1,6 @@
-import { Heap } from "./heap";
+import { Heap, ToString } from "./heap";
 
-export class BinaryHeap<Type> implements Heap<Type>{
+export class BinaryHeap<Type extends ToString> implements Heap<Type>{
     private values_list: Type[];
     private values_index: { [key: string]: number } = {}
     private compare_fn: (parent: Type, child: Type) => boolean;
@@ -21,14 +21,15 @@ export class BinaryHeap<Type> implements Heap<Type>{
     }
 
 
-    public extractRoot() {
+    public extractRoot(): Type | undefined {
         let heap_size = this.values_list.length;
-
-        if (heap_size < 1)
-            return
 
         this.replace(0, heap_size - 1)
         let root = this.values_list.pop();
+
+        if (root === undefined || root === null)
+            return
+
         delete this.values_index[root.toString()]
         this.heapifyDown(0);
 
@@ -110,7 +111,7 @@ export class BinaryHeap<Type> implements Heap<Type>{
 
         let parent = this.values_list[index];
         let left_child = this.values_list[left_child_idx];
-        let right_child: Type;
+        let right_child: Type | undefined = undefined;
 
         if (right_child_idx <= last_idx)
             right_child = this.values_list[right_child_idx];

@@ -1,14 +1,14 @@
 import { BinaryHeap } from "./binary_heap";
-import { Heap } from "./heap"
+import { Heap, ToString } from "./heap"
 
-export class PriorityQueue<Type> {
+export class PriorityQueue<Type extends ToString> {
     private data: Heap<Type>;
     private compare_fn: (high: Type, low: Type) => boolean;
 
     constructor(
         values_list: Type[],
         key: (high: Type, low: Type) => boolean,
-        store_backend: new (values_list: Type[], key: (high: Type, low: Type) => boolean) => Heap<Type> = BinaryHeap<Type>
+        store_backend: new (values_list: Type[], key: (high: Type, low: Type) => boolean) => Heap<Type> = BinaryHeap
     ) {
         this.data = new store_backend(values_list, key);
         this.compare_fn = key;

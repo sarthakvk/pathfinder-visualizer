@@ -1,6 +1,6 @@
 import { Grid, GridCell } from '../data_structures/grid';
 
-class BFS {
+export class BFS {
     private grid: Grid;
     private shortest_path_parent_refs: { [key: string]: GridCell } = {};
 
@@ -24,7 +24,7 @@ class BFS {
         }
         path.push(child);
 
-        return path;
+        return path.reverse();
     }
 
 
