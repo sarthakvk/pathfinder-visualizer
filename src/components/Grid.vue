@@ -4,10 +4,10 @@
         <h3 v-else-if="end === null"> Select the end point</h3>
         <h3 v-else>Click and hover to block the cell, path can't have a blocked cell</h3>
 
-        <input type="number" name="Rows" v-model="M" @change="initializeMatrix">
-        <input type="number" name="Columns" v-model="N" @change="initializeMatrix">
+        <input type="number" name="Rows" v-model="M" @input="initializeMatrix">
+        <input type="number" name="Columns" v-model="N" @input="initializeMatrix">
     </div>
-    <div class="table-container">
+    <div class="table-container" v-if="M > 0 && N > 0 && matrix.length == M && matrix[0].length == N">
         <table class="table" @mouseleave="canSelectBlockedCellByHover = false">
             <tr v-for="(row, i) in M">
                 <td :class="{ pathEndpoints: matrix[i][j], blocked: isBlocked(i, j) }" v-for="(col, j) in N"
@@ -20,109 +20,140 @@
         </table>
     </div>
     <div class="configuration">
-        <button class="findPathButton" @click="createShortestPath" :disabled="!!!start || !!!end">Find the shortest path</button>
+        <button class="findPathButton" @click="createShortestPath" :disabled="!!!start || !!!end">Find the shortest
+            path</button>
+        <button class="findPathButton" @click="initializeMatrix">Reset</button>
     </div>
 </template>
 
 <script lang="ts">
-import { Vue } from 'vue-class-component'
-import { BFS } from '../backend/algorithms/bfs'
-import { Grid } from '@/backend/data_structures/grid';
+import { defineComponent, ref, onMounted, PropType } from 'vue';
+import { BFS } from '../backend/algorithms/bfs';
+import { Grid, GridCell } from '@/backend/data_structures/grid';
 import { Dijkstra } from '../backend/algorithms/dijkstra';
 
-export default class GridComponent extends Vue {
-    start: [number, number] | null = null;
-    end: [number, number] | null = null;
-    M = 0;
-    N = 0;
-    matrix: boolean[][] = []
-    blocked: { [key: number]: { [key: number]: boolean } } = {}
-    canSelectBlockedCellByHover = false;
+export default defineComponent({
+    props: {
+        algorithm: {
+            type: String as PropType<string>,
+            default: 'bfs',
+        },
+    },
+    setup(props) {
+        const start = ref<[number, number] | null>(null);
+        const end = ref<[number, number] | null>(null);
+        let M = ref(0);
+        let N = ref(0);
+        const matrix = ref<boolean[][]>([]);
+        const blocked = ref<{ [key: number]: { [key: number]: boolean } }>({});
+        const canSelectBlockedCellByHover = ref(false);
 
-    created(): void {
-        this.initializeMatrix()
-    }
+        onMounted(() => {
+            M.value = 30;
+            N.value = 30;
+            initializeMatrix();
+        });
 
-    initializeMatrix() {
-        this.start = null;
-        this.end = null;
-        this.blocked = {};
-        this.matrix = Array.from({ length: this.M }, () =>
-            Array.from({ length: this.N }, () => false)
-        );
-    }
+        const initializeMatrix = () => {
+            start.value = null;
+            end.value = null;
+            blocked.value = {};
+            matrix.value = Array.from({ length: M.value }, () =>
+                Array.from({ length: N.value }, () => false)
+            );
+        };
 
-    markBlocked(row: number, column: number) {
-        if (!(this.start && this.end))
-            return
+        const markBlocked = (row: number, column: number) => {
+            if (!(start.value && end.value)) return;
 
-        this.canSelectBlockedCellByHover = true
-        let blocked_rows = this.blocked[row] ? this.blocked[row] : {};
-        blocked_rows[column] = !!!blocked_rows[column];
-        this.blocked[row] = blocked_rows;
-    }
+            canSelectBlockedCellByHover.value = true;
+            const blockedRows = blocked.value[row] ? { ...blocked.value[row] } : {};
+            blockedRows[column] = !!!blockedRows[column];
+            blocked.value[row] = blockedRows;
+        };
 
-    markPoint(row: number, column: number) {
-        if (this.start === null) {
-            this.start = [row, column]
-            this.matrix[row][column] = true;
-        }
-        else if (this.end === null) {
-            this.end = [row, column]
-            this.matrix[row][column] = true;
-        }
-    }
+        const markPoint = (row: number, column: number) => {
+            if (start.value === null) {
+                start.value = [row, column];
+                matrix.value[row][column] = true;
+            } else if (end.value === null) {
+                end.value = [row, column];
+                matrix.value[row][column] = true;
+            }
+        };
 
-    isBlocked(i: number, j: number) {
-        return this.blocked[i] ? !!this.blocked[i][j] : false
-    }
+        const isBlocked = (i: number, j: number) => {
+            return blocked.value[i] ? !!blocked.value[i][j] : false;
+        };
 
-    getBlockedList(): [number, number][] {
-        let obj = this.blocked;
-        let blocked_list: [number, number][] = Object.keys(obj)
-            .flatMap((outerKey) =>
-                Object.keys(obj[parseInt(outerKey, 10)])
-                    .filter((innerKey) => obj[parseInt(outerKey, 10)][parseInt(innerKey, 10)])
-                    .map((innerKey): [number, number] => [parseInt(outerKey, 10), parseInt(innerKey, 10)])
-            )
+        const getBlockedList = (): [number, number][] => {
+            const obj = blocked.value;
+            const blockedList: [number, number][] = Object.keys(obj)
+                .flatMap((outerKey) =>
+                    Object.keys(obj[parseInt(outerKey, 10)])
+                        .filter((innerKey) => obj[parseInt(outerKey, 10)][parseInt(innerKey, 10)])
+                        .map((innerKey): [number, number] => [parseInt(outerKey, 10), parseInt(innerKey, 10)])
+                );
 
-        console.log(blocked_list)
-        return blocked_list;
-    }
+            return blockedList;
+        };
 
-    clearPath() {
-        if (!(!!this.start && !!this.end))
-            return
+        const clearPath = () => {
+            if (!(start.value && end.value)) return;
 
-        this.matrix.forEach(
-            (row, r) => row.forEach(
-                (val, c) => {
-                    if (!((r === this.start![0] && c === this.start![1]) || (r === this.end![0] && c === this.end![1])))
-                        this.matrix[r][c] = false;
-                }
-            )
-        )
-    }
-    async createShortestPath() {
-        this.clearPath()
-        let blocked_list = this.getBlockedList()
-        let grid = new Grid(this.M, this.N, blocked_list);
-        let start_cell = grid.getCell(...this.start!)
-        let end_cell = grid.getCell(...this.end!)
-        let bfs = new BFS(grid)
-        // let dj = new Dijkstra(grid, this.start!)
-        let path = bfs.shortestPath(start_cell, end_cell)
-        // let path = dj.findShortestPath(this.end!)
+            matrix.value.forEach((row, r) =>
+                row.forEach((val, c) => {
+                    if (!((r === start.value![0] && c === start.value![1]) || (r === end.value![0] && c === end.value![1])))
+                        matrix.value[r][c] = false;
+                })
+            );
+        };
 
-        const timer = (ms: number) => new Promise(res => setTimeout(res, ms))
+        const createShortestPath = async () => {
+            clearPath();
+            let blockedList = getBlockedList();
+            let grid = new Grid(M.value, N.value, blockedList);
+            let startCell = grid.getCell(...start.value!);
+            let endCell = grid.getCell(...end.value!);
+            let path: GridCell[] = [];
 
-        for (let cell of path) {
-            this.matrix[cell.x][cell.y] = true;
-            await timer(50);
-        }
-    }
-}
+            if (props.algorithm === "bfs") {
+                let bfs = new BFS(grid);
+                path = bfs.shortestPath(startCell, endCell);
+            }
+            else if (props.algorithm == "dijkstra") {
+                let dj = new Dijkstra(grid, start.value!);
+                path = dj.findShortestPath(end.value!);
+            }
+
+            const timer = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+            for (const cell of path) {
+                matrix.value[cell.x][cell.y] = true;
+                await timer(50);
+            }
+        };
+
+        return {
+            start,
+            end,
+            M,
+            N,
+            matrix,
+            blocked,
+            canSelectBlockedCellByHover,
+            initializeMatrix,
+            markBlocked,
+            markPoint,
+            isBlocked,
+            getBlockedList,
+            clearPath,
+            createShortestPath,
+        };
+    },
+});
 </script>
+
 
 <style>
 .configuration {
@@ -133,6 +164,11 @@ export default class GridComponent extends Vue {
     justify-items: center;
     margin-top: 5px;
     margin-bottom: 5px;
+}
+
+.configuration button {
+    margin-right: 5px;
+    margin-left: 5px;
 }
 
 .table-container {
